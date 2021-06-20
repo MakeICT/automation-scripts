@@ -17,10 +17,11 @@ class ChildScript(Script):
         self.processed_filename = "followup_processed.txt"
 
     def Run(self):
-        cutoff_date=self.WA_API.DateTimeToWADate(datetime.now() - timedelta(days=180))
-        inactive_contacts = self.WA_API.GetFilteredContacts("'Profile+last+updated'+le+%s+and+'Last+login+date'+le+%s+and+'Membership+level+ID'+eq+813239" % (cutoff_date,cutoff_date))
-        for contact in inactive_contacts:
-            print(contact,'\n')
+        cutoff_date = self.WA_API.DateTimeToWADate(datetime.now() - timedelta(days=720))
+        inactive_contacts = self.WA_API.GetFilteredContacts("'Archived'+eq+'False'+and+'Member'+eq+'False'+and+'Profile+last+updated'+le+%s+and+'Last+login+date'+le+%s"% (cutoff_date, cutoff_date))
+        # for contact in inactive_contacts:
+        #     print(contact, '\n')
+        print(len(inactive_contacts))
         ids = [contact['Id'] for contact in inactive_contacts]
         print(ids)
         for id in ids:
