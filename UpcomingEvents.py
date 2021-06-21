@@ -6,10 +6,12 @@ from datetime import timedelta
 from dateutil import tz
 import urllib
 import configparser
+import requests
 #import MySQLdb
 
-from WildApricotAPI.WildApricotAPI import WaApiClient
-from MailBot.mailer import MailBot
+from wildapricot_api import WaApiClient
+# from mailer import MailBot
+
 #from Database import Database
 
 #os.chdir(config.get('files', 'installDirectory'))
