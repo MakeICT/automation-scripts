@@ -20,9 +20,6 @@ try:
     upcoming_events = WA_API.GetUpcomingEvents()
     upcoming_events = sorted(upcoming_events, key=lambda event: event['StartDate'])
     events = []
-    event_dates = []
-    event_clumps = []
-    event_clump = []
     for event in upcoming_events:
         if not event['AccessLevel'] == 'AdminOnly':
             # spots_available = event['RegistrationsLimit'] - event['ConfirmedRegistrationsCount']
@@ -32,18 +29,16 @@ try:
             # else:
             # 	spots = 'FULL'
             start_date = WA_API.WADateToDateTime(event['StartDate'])
+            event_date = start_date.strftime('%b %d')
             event_details = {"time": f"{start_date.strftime('%I:%M %p')}", 
                              "name": f"{event['Name']}", 
                              "link": f"http://makeict.wildapricot.org/event-{str(event['Id'])}"}
-            if(start_date.strftime('%b %d')) not in event_dates:
-                if len(event_dates):
-                    event_clumps.append(event_clump.copy())
-                event_dates.append(start_date.strftime('%b %d'))
-                event_clump = []
-            event_clump.append(event_details)
-    event_clumps.append(event_clump)
-    for i, date in enumerate(event_dates):
-        events.append({"date": date, "events": event_clumps[i]})
+            if(event_date not in [event["date"] for event in events]):
+                events.append({"date": event_date, "events": []})
+            for event in events:
+                if event["date"] == event_date:
+                    event["events"].append(event_details)
+
     variables = {"events": events}.__str__().replace("'", '"')
     print(variables)
 
