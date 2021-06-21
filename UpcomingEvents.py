@@ -63,19 +63,47 @@ mb.setAdminAddress(config.get('email', 'adminAddress'))
 #Email info to treasurer
 
 try:
-	sys.exit()
 	upcoming_events = WA_API.GetUpcomingEvents()
 	upcoming_events = sorted(upcoming_events, key=lambda event: event['StartDate'])
+	events = []
+	event_dates = []
+	event_clumps = []
+	event_clump = []
 	for event in upcoming_events:
 		if not event['AccessLevel'] == 'AdminOnly':
-			spots_available = event['RegistrationsLimit'] - event['ConfirmedRegistrationsCount']
-			spots = None
-			if spots_available > 0:
-				spots = str(spots_available) + 'Register'
-			else:
-				spots = 'FULL'
-			start_date = WA_API.ConvertWADate(event['StartDate'])
-			print(start_date.strftime('%b %d') + ' | ' + start_date.strftime('%I:%M %p') + ' | ' + event['Name'] + ' | ' + '<a href="http://makeict.wildapricot.org/event-' + str(event['Id']) + '" target="_blank">Register</a><br />')
+			# spots_available = event['RegistrationsLimit'] - event['ConfirmedRegistrationsCount']
+			# spots = None
+			# if spots_available > 0:
+			# 	spots = str(spots_available) + 'Register'
+			# else:
+			# 	spots = 'FULL'
+			start_date = WA_API.WADateToDateTime(event['StartDate'])
+			event_details = {"time": f"{start_date.strftime('%I:%M %p')}", 
+							 "name": f"{event['Name']}", 
+							 "link": f"http://makeict.wildapricot.org/event-{str(event['Id'])}"}
+			if(start_date.strftime('%b %d')) not in event_dates:
+				if len(event_dates):
+					event_clumps.append(event_clump.copy())
+				event_dates.append(start_date.strftime('%b %d'))
+				event_clump = []
+			event_clump.append(event_details)
+	event_clumps.append(event_clump)
+	for i, date in enumerate(event_dates):
+		events.append({"date": date, "events": event_clumps[i]})
+	variables = {"events": events}.__str__().replace("'", '"')
+	print(variables)
+
+	res = requests.post(
+		f"https://api.mailgun.net/v3/{config.get('mailgun', 'site')}/messages",
+		auth=("api", config.get('mailgun', 'api_key')),
+		data={"from": "MakeICT Events <events@makeict.org>",
+			"to": "test_mailing_list@mg.makeict.org",
+			"subject": "Upcoming Events At MakeICT",
+			"template": "upcoming_events",
+			"h:X-Mailgun-Variables": variables})
+
+	print(res, res.content)
+			
 	sys.exit()
 	registration_type = WA_API.GetRegistrationTypesByEventID(2802353)[1]
 	print(registration_type)
