@@ -54,7 +54,8 @@ refund_min_days = 1
 #	reminders_days.append(timedelta(days=int(r)))
 
 script = PayCalc(config.get('api','key'))
-mb = MailBot(config.get('email','username'), config.get('email','password'))
+mb = MailBot(config.get('email','username'), config.get('email','password'),
+						config.get('email','server'), config.get('email','port') )
 mb.setDisplayName(config.get('email', 'displayName'))
 mb.setAdminAddress(config.get('email', 'adminAddress'))
 
@@ -167,16 +168,16 @@ try:
 		safety_facility_fee = 20
 		safety_hourly = 15
 
-		safety_class = "safety class" in event['Name'].lower()
+		safety_class = "safety class" in event['Name'].lower() or "woodshop authorization" in event['Name'].lower()
 
 		instructor_name = None
 		instructor_email = None
 
 		for tag in event['Tags']:
 			split_tag = tag.split(':')
-			if split_tag[0] == 'instructor_name':
+			if split_tag[0] in ('instructor_name', 'host_name'):
 				instructor_name = ' '.join(split_tag[1:])
-			elif split_tag[0] == 'instructor_email':
+			elif split_tag[0] in ('instructor_email', 'host_email'):
 				instructor_email = ' '.join(split_tag[1:])
 
 		for registrant in registrants:
@@ -232,7 +233,7 @@ try:
 			instructor_payment = total_instructor_fees*instructor_percentage
 		else:
 			paid_hours = max(round(class_duration),1)
-			instructor_payment = paid_hours * safety_hourly
+			instructor_payment = paid_hours * safety_hourly if len(registrants) else 0 
 
 		# print("instructor payment:",instructor_payment)
 		payment_summary.append({'event_name':event["Name"],
