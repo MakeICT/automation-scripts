@@ -21,11 +21,16 @@ class ChildScript(Script):
             api_key=self.config.get('discourse_api', 'key'))
 
         self.member_levels = ['Monthly',
-                              '6 months',
-                              '12 months',
+                              '6 Months',
+                              '12 Months',
+                              'Monthly (grandfathered)',
+                              '6 months (grandfathered)',
+                              '12 months (grandfathered)',
                               "Scholarship (monthly)",
                               "Scholarship (6 months)",
-                              "Scholarship (12 months)"]
+                              "Scholarship (12 months)",
+                              "36 months",
+                              "60 months"]
         self.group_name = 'MakeICT_Members'
         self.member_group_id = \
             self.discourse_api._get("/groups/{0}.json".format(self.group_name))['group']['id']
