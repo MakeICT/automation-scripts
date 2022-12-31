@@ -67,29 +67,28 @@ mb.setAdminAddress(config.get('email', 'adminAddress'))
 		#Authorizations - free for members, $20 for non-members, instructor payment of $15/hour?
 #Email info to treasurer
 try:
-	# event = WA_API.GetEventByID(2723715)
-	# logs = WA_API.GetLogItems()
-	# invoice = WA_API.GetInvoiceByID('38574014')
-	# print(invoice)
+	start_date = None
+	end_date = None
+	# Uncomment to specify date range. Defaults to most recent full month.
+	# start_date = datetime(2022, 12, 1)
+	# end_date = datetime(2023, 1, 1)
 
-	# for log in logs:
-	# 	print(log)
+	if not start_date:
+		start_date = datetime.today()
+		start_date = start_date.replace(day=1, month=((start_date.month+10)%12)+1, hour=0, minute=0, second=0, microsecond=0)
+		if start_date.month == 12:
+			start_date = start_date.replace(year=start_date.year-1)
+	if not end_date:
+		end_month = start_date.month + 1
+		if end_month == 13:
+			end_month = 1
+		end_date = start_date.replace(month=end_month)
+		if end_date.month == 1:
+			end_date = end_date.replace(year=end_date.year+1)
 
-	# start_date = datetime(2018, 2, 1)
-	# end_date = datetime(2018, 3, 1)
+	print(f"{start_date} - {end_date}")
 
-	start_date = datetime.today()
-	start_date = start_date.replace(day=1, month=((start_date.month+10)%12)+1, hour=0, minute=0, second=0, microsecond=0)
-	if start_date.month == 12:
-		start_date = start_date.replace(year=start_date.year-1)
-	print(start_date)
-	end_month = start_date.month + 1
-	if end_month == 13:
-		end_month = 1
-	end_date = start_date.replace(month=end_month)
-	if end_date.month == 1:
-		end_date = end_date.replace(year=end_date.year+1)
-	print(end_date)
+
 
 	# print("\n=================================================")
 	# print("Voided Event Invoices")
