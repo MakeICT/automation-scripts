@@ -6,6 +6,8 @@ from datetime import timedelta
 from dateutil import tz
 import urllib
 import configparser
+import csv
+
 #import MySQLdb
 
 # from WildApricotAPI.WildApricotAPI import WaApiClient
@@ -240,34 +242,43 @@ try:
 								'payment':instructor_payment,
 								})
 
-	instructor_emails = []
-	for p in payment_summary:
-		if p['instructor_email'] not in instructor_emails:
-			instructor_emails.append(p['instructor_email'])
-	for e in instructor_emails:
-		instructor_name = [ps['instructor_name'] for ps in payment_summary if ps['instructor_email'] == e][0]
-		if e:
-			print(instructor_name,':',e)
-		else:
-			print("-INSTRUCTOR UNKNOWN-")
-		total_payment = 0
-		for p in payment_summary:
-			if p['instructor_email'] == e:
-				print(p['event_date'],p['event_name'],p['payment'])
-				total_payment += p['payment']
-		print('total due:',total_payment)
-		print('--------------------------------')
+	with open(f'Instructor Payments/Instructor Payments {start_date.strftime("%B")} {start_date.year}.csv', 'w') as csvfile:
+		csv_writer = csv.writer(csvfile)
+		csv_writer.writerow(['Name', 'Email', 'Date', 'Title', 'Amount'])
 
-	if unpaid_registrations:
-		print("\n=================================================")
-		print("The following registrations have not been paid:")
-		print("=================================================")
-		for r in unpaid_registrations:
-			print('Event Name:', r['Event']['Name'])
-			print('Contact Name:',r['Contact']['Name'])
-			print('Money Owed:',r['RegistrationFee'] - r['PaidSum'])
-			print('Attended Event:', r['IsCheckedIn'])
-			print('-------------------------------------------------')
+		instructor_emails = []
+		for p in payment_summary:
+			if p['instructor_email'] not in instructor_emails:
+				instructor_emails.append(p['instructor_email'])
+		for e in instructor_emails:
+			instructor_name = [ps['instructor_name'] for ps in payment_summary if ps['instructor_email'] == e][0]
+			if e:
+				print(instructor_name,':',e)
+				# csv_writer.writerow([instructor_name, e])
+			else:
+				print(["-INSTRUCTOR UNKNOWN-"])
+				# csv_writer.writerow(["-INSTRUCTOR UNKNOWN-"])
+			total_payment = 0
+			for p in payment_summary:
+				if p['instructor_email'] == e:
+					print(p['event_date'],p['event_name'],p['payment'])
+					csv_writer.writerow([instructor_name, e ,p['event_date'],p['event_name'],p['payment']])
+					total_payment += p['payment']
+			csv_writer.writerow([instructor_name, e,'','Total:',total_payment])
+			print('total due:',total_payment)
+			print('--------------------------------')
+			csv_writer.writerow([''])
+
+		if unpaid_registrations:
+			print("\n=================================================")
+			print("The following registrations have not been paid:")
+			print("=================================================")
+			for r in unpaid_registrations:
+				print('Event Name:', r['Event']['Name'])
+				print('Contact Name:',r['Contact']['Name'])
+				print('Money Owed:',r['RegistrationFee'] - r['PaidSum'])
+				print('Attended Event:', r['IsCheckedIn'])
+				print('-------------------------------------------------')
 
 except Exception as e:
 	message = "The following exception was thrown:\r\n\r\n" + str(e) + "\r\n\r\n" + traceback.format_exc()
